@@ -276,13 +276,15 @@ async function loadDashboard(user) {
 
         await checkAdmin();
 
-        await loadAdminWithdrawals();
-        await loadAdminDeposits();
-        await loadTasks();
-        await loadMySubmissions();
-        await loadTransactions();
-        await loadWithdrawalHistory();
-        await loadDepositHistory();
+      await Promise.all([
+    loadAdminWithdrawals(),
+    loadAdminDeposits(),
+    loadTasks(),
+    loadMySubmissions(),
+    loadTransactions(),
+    loadWithdrawalHistory(),
+    loadDepositHistory()
+]);
 
         window.scrollTo({
             top: 0,
