@@ -1877,3 +1877,50 @@ footer p + p {
         transition-duration: 0.01ms !important;
     }
 }
+
+/* ==================================
+   EARNHUB - MOBILE SPEED FIX
+================================== */
+
+@media (max-width: 800px) {
+
+    *,
+    *::before,
+    *::after {
+        animation: none !important;
+        transition: none !important;
+        scroll-behavior: auto !important;
+    }
+
+    body {
+        background-attachment: scroll !important;
+        background-size: auto !important;
+        overflow-x: hidden;
+    }
+
+    .card,
+    .panel,
+    .stat-card,
+    .hero-card,
+    .navbar,
+    .main-sidebar,
+    .wallet-balance-card,
+    .deposit-premium,
+    .withdrawal-premium {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        box-shadow: none !important;
+    }
+
+    .card:hover,
+    .panel:hover,
+    .stat-card:hover,
+    .hero-card:hover {
+        transform: none !important;
+    }
+
+    img {
+        max-width: 100%;
+        height: auto;
+    }
+}
