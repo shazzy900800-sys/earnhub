@@ -190,6 +190,15 @@ function updateAuthButtons(user) {
     const nav = el("navButtons");
     if (!nav) return;
 
+    const whatsappButton = `
+        <a href="https://whatsapp.com/channel/0029Vb97phE3WHTRktFWCb41"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="whatsapp-nav-btn">
+            <span>☘</span> WhatsApp
+        </a>
+    `;
+
     if (user) {
         const name =
             user.user_metadata?.full_name ||
@@ -197,17 +206,26 @@ function updateAuthButtons(user) {
             "User";
 
         nav.innerHTML = `
+            <button onclick="showHome()">Home</button>
+            <button onclick="goTo('about')">About</button>
+            <button onclick="goTo('publicTasks')">Tasks</button>
+            ${whatsappButton}
             <span>Hi, ${escapeHTML(name)}</span>
             <button onclick="openDashboard()">Dashboard</button>
             <button onclick="logout()">Logout</button>
         `;
     } else {
         nav.innerHTML = `
+            <button onclick="showHome()">Home</button>
+            <button onclick="goTo('about')">About</button>
+            <button onclick="goTo('publicTasks')">Tasks</button>
+            ${whatsappButton}
             <button onclick="showLogin()">Login</button>
             <button class="primary" onclick="showSignup()">Sign Up</button>
         `;
     }
 }
+
 
 function showHome() {
     el("dashboard")?.classList.add("hidden");
@@ -273,10 +291,10 @@ async function loadDashboard(user) {
         el("dashboard")?.classList.remove("hidden");
 
         updateAuthButtons(user);
+        await loadNotifications();
 
         await checkAdmin();
-
-      await Promise.all([
+await Promise.all([
     loadAdminWithdrawals(),
     loadAdminDeposits(),
     loadTasks(),
@@ -285,7 +303,6 @@ async function loadDashboard(user) {
     loadWithdrawalHistory(),
     loadDepositHistory()
 ]);
-
         window.scrollTo({
             top: 0,
             behavior: "smooth"
@@ -341,10 +358,12 @@ async function checkAdmin() {
         isAdmin = data === true;
 
         panel?.classList.toggle("hidden", !isAdmin);
-
-        if (isAdmin) {
-            await loadAdminSubmissions();
-        }
+if (isAdmin) {
+    await Promise.all([
+        loadAdminSubmissions(),
+        loadAdminAnalytics()
+    ]);
+}
 
     } catch (error) {
         console.error("Admin check:", error);
@@ -1052,7 +1071,79 @@ async function loadAdminSubmissions() {
     }
 }
 
+async function loadAdminAnalytics() {
+    if (!db || !currentUser || !isAdmin) return;
 
+    try {
+        const [
+            usersResult,
+            depositsResult,
+            withdrawalsResult,
+            pendingDepositsResult,
+            pendingWithdrawalsResult,
+            rewardsResult
+        ] = await Promise.all([
+
+            db.from("profiles")
+                .select("*", { count: "exact", head: true }),
+
+            db.from("deposit_requests")
+                .select("amount")
+                .eq("status", "approved"),
+
+            db.from("withdrawal_requests")
+                .select("amount")
+                .eq("status", "paid"),
+
+            db.from("deposit_requests")
+                .select("*", { count: "exact", head: true })
+                .eq("status", "pending"),
+
+            db.from("withdrawal_requests")
+                .select("*", { count: "exact", head: true })
+                .eq("status", "pending"),
+
+            db.from("wallet_transactions")
+                .select("amount")
+                .eq("transaction_type", "task_reward")
+        ]);
+
+        const results = [
+            usersResult,
+            depositsResult,
+            withdrawalsResult,
+            pendingDepositsResult,
+            pendingWithdrawalsResult,
+            rewardsResult
+        ];
+
+        const failed = results.find(result => result.error);
+        if (failed) throw failed.error;
+
+        const totalDeposits = depositsResult.data
+            .reduce((sum, item) => sum + Number(item.amount), 0);
+
+        const totalWithdrawals = withdrawalsResult.data
+            .reduce((sum, item) => sum + Number(item.amount), 0);
+
+        const totalRewards = rewardsResult.data
+            .reduce((sum, item) => sum + Number(item.amount), 0);
+
+        const pendingRequests =
+            pendingDepositsResult.count +
+            pendingWithdrawalsResult.count;
+
+        setText("analyticsUsers", usersResult.count ?? 0);
+        setText("analyticsDeposits", money(totalDeposits));
+        setText("analyticsWithdrawals", money(totalWithdrawals));
+        setText("analyticsPending", pendingRequests);
+        setText("analyticsRewards", money(totalRewards));
+
+    } catch (error) {
+        console.error("Analytics error:", error);
+        notify("Analytics error: " + error.message);
+    }
+}
 // =================================================
 // 17. ADMIN - WITHDRAWAL REQUESTS
 // =================================================
@@ -1659,3 +1750,89 @@ document.addEventListener("DOMContentLoaded", () => {
     setupAuthListener();
     initializeEarnHub();
 });
+
+// =================================================
+// 31. NOTIFICATIONS SYSTEM
+// =================================================
+
+async function loadNotifications() {
+    if (!db || !currentUser) return;
+
+    const container = el("notificationList");
+    const count = el("notificationCount");
+
+    if (!container) return;
+
+    container.textContent = "Loading notifications...";
+
+    try {
+        const { data, error } = await db
+            .from("notifications")
+            .select("*")
+            .eq("user_id", currentUser.id)
+            .order("created_at", { ascending: false })
+            .limit(30);
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+            container.textContent = "No notifications yet.";
+            if (count) count.textContent = "0";
+            return;
+        }
+
+        const unread = data.filter(item => !item.is_read).length;
+
+        if (count) count.textContent = unread + " New";
+
+        container.innerHTML = data.map(item => `
+            <article class="card notification-item">
+                <h3>${escapeHTML(item.title)}</h3>
+                <p>${escapeHTML(item.message)}</p>
+                <small>
+                    ${new Date(item.created_at).toLocaleString()}
+                </small>
+                ${
+                    item.is_read
+                    ? '<span>Read</span>'
+                    : `
+                        <button onclick="markNotificationRead(${Number(item.id)})">
+                            Mark as Read
+                        </button>
+                    `
+                }
+            </article>
+        `).join("");
+
+    } catch (error) {
+        console.error("Notifications error:", error);
+        container.textContent =
+            "Could not load notifications: " + error.message;
+    }
+}
+
+
+// =================================================
+// 32. MARK NOTIFICATION AS READ
+// =================================================
+
+async function markNotificationRead(notificationId) {
+    if (!db || !currentUser) return;
+
+    try {
+        const { error } = await db
+            .from("notifications")
+            .update({ is_read: true })
+            .eq("id", notificationId)
+            .eq("user_id", currentUser.id);
+
+        if (error) throw error;
+
+        await loadNotifications();
+
+    } catch (error) {
+        console.error("Mark notification read error:", error);
+        notify("Could not update notification: " + error.message);
+    }
+}
+
