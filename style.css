@@ -28,92 +28,6 @@ html {
     scroll-padding-top: 100px;
 }
 
-/* =========================================
-   EARNHUB MOBILE PERFORMANCE FIX
-========================================= */
-
-/* Stop expensive background animation */
-@media (max-width: 800px) {
-
-    body {
-        background-size: auto;
-        animation: none;
-        overflow-x: clip;
-    }
-
-    /* Reduce heavy blur rendering */
-    .card,
-    .panel,
-    .stat-card,
-    .hero-card {
-        backdrop-filter: none;
-        -webkit-backdrop-filter: none;
-    }
-
-    .navbar,
-    .main-sidebar {
-        backdrop-filter: none;
-        -webkit-backdrop-filter: none;
-    }
-
-    /* Stop continuous decorative animations */
-    .navbar::before,
-    .logo,
-    .logo span,
-    .hero-content,
-    .hero-card,
-    .hero-icon,
-    .feature-icon {
-        animation: none !important;
-    }
-
-    /* Keep dashboard stable */
-    .dashboard-heading,
-    .stat-card,
-    .wallet-balance-card,
-    .deposit-premium,
-    .withdrawal-premium {
-        animation: none !important;
-        transform: none;
-    }
-
-    /* Avoid hover movement on touch screens */
-    .card:hover,
-    .stat-card:hover,
-    .panel:hover,
-    .hero-card:hover,
-    .wallet-balance-card:hover {
-        transform: none;
-    }
-
-    /* Improve mobile width */
-    img,
-    video,
-    iframe {
-        max-width: 100%;
-    }
-
-    .section,
-    .panel,
-    .dashboard-heading {
-        min-width: 0;
-    }
-
-    button,
-    input,
-    select,
-    textarea {
-        max-width: 100%;
-    }
-}
-
-/* Reduce motion for mobile users */
-@media (max-width: 800px) and (prefers-reduced-motion: no-preference) {
-    html {
-        scroll-behavior: auto;
-    }
-}
-
 body {
     font-family: Arial, Helvetica, sans-serif;
     background:
@@ -1878,6 +1792,92 @@ footer p + p {
     }
 }
 
+/* =========================================
+   EARNHUB MOBILE PERFORMANCE FIX
+========================================= */
+
+/* Stop expensive background animation */
+@media (max-width: 800px) {
+
+    body {
+        background-size: auto;
+        animation: none;
+        overflow-x: clip;
+    }
+
+    /* Reduce heavy blur rendering */
+    .card,
+    .panel,
+    .stat-card,
+    .hero-card {
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+    }
+
+    .navbar,
+    .main-sidebar {
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+    }
+
+    /* Stop continuous decorative animations */
+    .navbar::before,
+    .logo,
+    .logo span,
+    .hero-content,
+    .hero-card,
+    .hero-icon,
+    .feature-icon {
+        animation: none !important;
+    }
+
+    /* Keep dashboard stable */
+    .dashboard-heading,
+    .stat-card,
+    .wallet-balance-card,
+    .deposit-premium,
+    .withdrawal-premium {
+        animation: none !important;
+        transform: none;
+    }
+
+    /* Avoid hover movement on touch screens */
+    .card:hover,
+    .stat-card:hover,
+    .panel:hover,
+    .hero-card:hover,
+    .wallet-balance-card:hover {
+        transform: none;
+    }
+
+    /* Improve mobile width */
+    img,
+    video,
+    iframe {
+        max-width: 100%;
+    }
+
+    .section,
+    .panel,
+    .dashboard-heading {
+        min-width: 0;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+        max-width: 100%;
+    }
+}
+
+/* Reduce motion for mobile users */
+@media (max-width: 800px) and (prefers-reduced-motion: no-preference) {
+    html {
+        scroll-behavior: auto;
+    }
+}
+
 /* ==================================
    EARNHUB - MOBILE SPEED FIX
 ================================== */
@@ -1922,5 +1922,79 @@ footer p + p {
     img {
         max-width: 100%;
         height: auto;
+    }
+}
+
+.whatsapp-nav-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 10px 15px;
+    border-radius: 8px;
+    background: #25D366;
+    color: #ffffff;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    transition: 0.2s ease;
+}
+
+.whatsapp-nav-btn:hover {
+    background: #1ebe5d;
+    transform: translateY(-2px);
+}
+/* ADMIN ANALYTICS */
+
+.admin-analytics {
+    margin-bottom: 30px;
+}
+
+.analytics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.analytics-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 14px;
+    padding: 22px;
+    transition: 0.2s ease;
+}
+
+.analytics-card span {
+    display: block;
+    color: #a5a5b5;
+    font-size: 13px;
+    margin-bottom: 12px;
+}
+
+.analytics-card h3 {
+    color: #ffffff;
+    font-size: 25px;
+    font-weight: 700;
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.analytics-card:hover {
+    border-color: rgba(0, 220, 150, 0.4);
+}
+
+@media (max-width: 600px) {
+    .analytics-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .analytics-card {
+        padding: 15px;
+    }
+
+    .analytics-card h3 {
+        font-size: 21px;
     }
 }
